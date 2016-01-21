@@ -1,0 +1,16 @@
+Terrence Li/Bryan Sugiarto
+tzli/bsugiart
+
+To compile:
+	- javac -cp '.:org.json-20120521.jar' thghtShreGen.java
+
+To run:
+	- java -cp '.:org.json-20120521.jar' thghtShreGen <output-text> <number of messages> <optional-file>
+	- if no optional file, will use "sense.txt"
+
+Assumptions:
+	- 10000 users
+	- Most messages are "public"
+	- Most "protected" messages are addressed to "subscribers".
+	- Most "private" messages are addressed to an individual user Id (usually not equal to the user Id of the author of the message)
+	- "Public" messages are roughly evently distributed between "all" and "subscribers", with other options ("self", or a user Id) taking no more than about 20% of the total number of "public" messages.
