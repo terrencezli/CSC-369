@@ -1,0 +1,33 @@
+// CSC 369. Lab 3.
+// Terrence Li
+// ThghtShre dataset
+
+// Query 1
+db.thot.find({"user": "u100"}, {"text": 1, _id: 0})
+
+// Query 2
+db.thot.find({}, {"text": 1, _id: 0}).skip(6).limit(6)
+
+// Query 3
+db.thot.find({$and: [{"recepient": {$ne: "all"}}, {"recepient": {$ne: "subscribers"}}, {"recepient": {$ne: "self"}}]}, {"user": 1, _id: 0}).sort({"user": 1})
+
+// Query 4
+db.thot.find({"status": "protected"}).count()
+
+// Query 5
+db.thot.find({"in-response": {$exists: true}}, {"text": 1, _id: 0})
+
+// Query 6
+db.thot.find({"status": "public", "recepient": "self"}).sort({"messageId": -1})
+
+// Query 7
+db.thot.find({"status": "public", "recepient": "self", "in-response": {$exists: true}}, {"text": 1, _id: 0})
+
+// Query 8
+db.thot.find({}, {"recepient": 1, "text": 1, _id: 0}).sort({"messageId": -1}).limit(4)
+
+// Query 9
+db.thot.find({"status": "private", "recepient": "self"}, {"user": 1, _id: 0})
+
+// Query 10
+db.thot.find({"status": "public", "in-response": {$exists: false}}, {"text": 1, _id: 0}).sort({"messageId": 1})
