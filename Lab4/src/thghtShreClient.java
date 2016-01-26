@@ -2,6 +2,7 @@
  * Created by terrence and bryan on 1/25/16.
  */
 import java.io.*;
+import java.sql.Timestamp;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,9 +16,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.Block;
 import com.mongodb.client.FindIterable;
-import org.bson.Document;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 
 
 public class thghtShreClient {
@@ -25,21 +23,13 @@ public class thghtShreClient {
     public static void main(String args[]) {
         JSONObject prop = new JSONObject();
 
-        /*try {
-            JSONTokener t = new JSONTokener(new FileReader(new File("configuration.properties")));
+        try {  
+        	
+        	JSONTokener t = new JSONTokener(new FileReader(new File("configuration.properties")));
              
-            
+             
             JSONObject js = new JSONObject(t);
             System.out.println(js.getString("mongo"));
-
-
-        } catch (IOException | JSONException ex) {
-            ex.printStackTrace();
-        }*/
-        
-        
-
-        try {  
 
 			Logger logger = Logger.getLogger("org.mongodb.driver");  // turn off logging
 			logger.setLevel(Level.OFF);                              // this lets us squash a lot
@@ -47,8 +37,15 @@ public class thghtShreClient {
 			
 			MongoClient c = new MongoClient("cslvm31");  // connect to server
 			MongoDatabase db = c.getDatabase("test");    // grab database called "alex"
-			 
+			String collectionName = js.getString("collection"); 
+			
 			System.out.println("===XXXXXXXXXX==========");
+			java.util.Date date= new java.util.Date();
+			System.out.println(new Timestamp(date.getTime()));
+			System.out.println("database name:" + db.getName());
+			System.out.println("collection:" + collectionName);
+			System.out.println("number of Documents:" + db.getCollection(collectionName).count());
+			
 			 
 			MongoCollection<Document> dox = db.getCollection("foo");  // grab collection "foo"
 			
@@ -80,7 +77,8 @@ public class thghtShreClient {
 		  System.out.println("=============================");
 		
 		}
-		     return;      
+        
+        return;      
     }
     
     
