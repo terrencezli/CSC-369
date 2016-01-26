@@ -3,9 +3,12 @@
  */
 import java.io.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.mongodb.DBCollection;
 import org.bson.Document;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -51,15 +54,52 @@ public class thghtShreClient {
             db = c.getDatabase(js.getString("database"));    // grab database called "alex"
 
             // server side
-            /*new Thread(new Runnable() {
-                @Override
-                public void run() {
+			// server side
+			new Thread(new Runnable() {
+				MongoClient c;
+				MongoDatabase db;
+				JSONTokener t;
+				JSONObject js;
+				Scanner s;
+				ArrayList<String> list;
 
-                    while (true) {
+				@Override
+				public void run() {
+					try {
+						t = new JSONTokener(new FileReader(new File(args[0])));
+						js = new JSONObject(t);
+						c = new MongoClient(js.getString("mongo"));  // connect to server
+						db = c.getDatabase(js.getString("database"));    // grab database called "alex"
 
-                    }
-                }
-            }).run();*/
+						String collectionName = js.getString("collection");
+						System.out.println("number of Documents:" + db.getCollection(collectionName).count());
+						db.getCollection(js.getString("monitor")).drop();
+
+						s = new Scanner(new File(js.getString("wordFilter")));
+						list = new ArrayList<String>();
+						while (s.hasNext()){
+							list.add(s.next());
+						}
+						s.close();
+
+						System.out.println("===XXXXXXXXXX==========");
+						Date date= new Date();
+						System.out.println(new Timestamp(date.getTime()));
+						System.out.println("database name:" + db.getName());
+						System.out.println("collection:" + collectionName);
+						System.out.println("number of Documents:" + db.getCollection(collectionName).count());
+
+						while (true) {
+							TimeUnit.SECONDS.sleep(3 * js.getInt("delay"));
+
+
+						}
+
+					} catch (FileNotFoundException | InterruptedException | JSONException e) {
+						e.printStackTrace();
+					}
+				}
+			}).start();
 
             
             
