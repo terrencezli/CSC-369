@@ -16,6 +16,7 @@ public class thghtShreClient {
         try {
             JSONTokener t = new JSONTokener(new FileReader(new File("configuration.properties")));
              
+            
             JSONObject js = new JSONObject(t);
             System.out.println(js.getString("mongo"));
 
