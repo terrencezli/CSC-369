@@ -3,12 +3,12 @@
  */
 import java.io.*;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.mongodb.DBCollection;
+import com.mongodb.client.MongoCursor;
 import org.bson.Document;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,13 +17,12 @@ import org.json.JSONTokener;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.DBCollection;
 import com.mongodb.util.JSON;
 import com.mongodb.Block;
 import com.mongodb.DBObject;
 import com.mongodb.client.FindIterable;
 
-import java.util.Date;
-import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 
@@ -90,8 +89,27 @@ public class thghtShreClient {
 						System.out.println("number of Documents:" + db.getCollection(collectionName).count());
 
 						while (true) {
+							JSONObject monitor = new JSONObject();
 							TimeUnit.SECONDS.sleep(3 * js.getInt("delay"));
 
+							date= new Date();
+							monitor.put("timestamp",new Timestamp(date.getTime()));
+
+							MongoCursor<String> distMessages= db.getCollection(collectionName).distinct("text", String.class).iterator();
+
+							int uniqueMessages = 0;
+							while (distMessages.hasNext()) {
+								uniqueMessages++;
+								distMessages.next();
+							}
+
+							MongoCursor<String> distUsers= db.getCollection(collectionName).distinct("user", String.class).iterator();
+
+							int uniqueUsers = 0;
+							while (distUsers.hasNext()) {
+								uniqueUsers++;
+								distUsers.next();
+							}
 
 						}
 
