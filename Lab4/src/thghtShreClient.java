@@ -7,20 +7,59 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.Block;
+import com.mongodb.client.FindIterable;
+import org.bson.Document;
+
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 
 public class thghtShreClient {
 
     public static void main(String args[]) {
         JSONObject prop = new JSONObject();
+        JSONTokener t;
+        JSONObject js;
+
+        MongoClient c;
+        MongoDatabase db;
+
+        Logger logger = Logger.getLogger("org.mongodb.driver");  // turn off logging
+        logger.setLevel(Level.OFF);                              // this lets us squash a lot
+
 
         try {
-            JSONTokener t = new JSONTokener(new FileReader(new File("configuration.properties")));
+            t = new JSONTokener(new FileReader(new File(args[0])));
              
-            JSONObject js = new JSONObject(t);
-            System.out.println(js.getString("mongo"));
+            js = new JSONObject(t);
 
+            c = new MongoClient(js.getString("mongo"));  // connect to server
+            db = c.getDatabase(js.getString("database"));    // grab database called "alex"
 
-        } catch (IOException | JSONException ex) {
+            // server side
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+
+                    while (true) {
+
+                    }
+                }
+            }).run();
+
+            while (true) {
+                // sleep amount
+                TimeUnit.SECONDS.sleep(Long.parseLong(js.getString("delay")));
+
+                
+            }
+
+        } catch (IOException | JSONException | InterruptedException ex) {
             ex.printStackTrace();
         }
     }
