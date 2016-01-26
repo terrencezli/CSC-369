@@ -2,10 +2,22 @@
  * Created by terrence and bryan on 1/25/16.
  */
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.bson.Document;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.Block;
+import com.mongodb.client.FindIterable;
+import org.bson.Document;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 
 public class thghtShreClient {
@@ -13,7 +25,7 @@ public class thghtShreClient {
     public static void main(String args[]) {
         JSONObject prop = new JSONObject();
 
-        try {
+        /*try {
             JSONTokener t = new JSONTokener(new FileReader(new File("configuration.properties")));
              
             
@@ -23,6 +35,54 @@ public class thghtShreClient {
 
         } catch (IOException | JSONException ex) {
             ex.printStackTrace();
-        }
+        }*/
+        
+        
+
+        try {  
+
+			Logger logger = Logger.getLogger("org.mongodb.driver");  // turn off logging
+			logger.setLevel(Level.OFF);                              // this lets us squash a lot
+			                                                      // of annoying messages
+			
+			MongoClient c = new MongoClient("cslvm31");  // connect to server
+			MongoDatabase db = c.getDatabase("test");    // grab database called "alex"
+			 
+			System.out.println("===XXXXXXXXXX==========");
+			 
+			MongoCollection<Document> dox = db.getCollection("foo");  // grab collection "foo"
+			
+			FindIterable<Document> result = dox.find();   // retrieve everything in collection foo
+			
+			result.forEach(new Block<Document>() {        // print each retrieved document
+			     public void apply(final Document d) {
+			         System.out.println(d);
+			     }
+			
+			  });		
+			
+			Document o = new Document();    // create a new JSON document object
+			o.append("type", "email");      // fill it with stuff
+			o.append("content", "lol");
+			 
+			System.out.println("= = = = = = = = = = = = = = =");
+			System.out.println(o);
+			System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+			
+			db.getCollection("foo").insertOne(o);   // insert one object into collection foo
+			
+		    System.out.println("\n\n ===  SUCCESS!! === \n\n");
+			
+		} catch (Exception e) {
+		
+		  System.out.println(e);
+		
+		  System.out.println("=============================");
+		
+		}
+		     return;      
     }
+    
+    
 }
+	
