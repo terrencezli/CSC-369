@@ -92,7 +92,7 @@ public class thghtShreClient {
                 fw.write(gen.toString(2));
                 fw.flush();
                 
-                if (cycles == 10) {
+                if (cycles == 40) {
             		String user = gen.getString("user");
             		int count = 0;
             		Document query = new Document();                // create a query document
