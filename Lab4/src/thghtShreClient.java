@@ -14,9 +14,13 @@ import org.json.JSONTokener;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.util.JSON;
 import com.mongodb.Block;
+import com.mongodb.DBObject;
 import com.mongodb.client.FindIterable;
 
+import java.util.Date;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 
@@ -31,11 +35,15 @@ public class thghtShreClient {
 
         MongoClient c;
         MongoDatabase db;
+        FileWriter fw = null;
+        
 
         Logger logger = Logger.getLogger("org.mongodb.driver");  // turn off logging
         logger.setLevel(Level.OFF);                              // this lets us squash a lot
 
         try {
+        	
+        	fw = new FileWriter(new File("log.txt"));
             t = new JSONTokener(new FileReader(new File(args[0])));
             js = new JSONObject(t);
 
@@ -43,7 +51,7 @@ public class thghtShreClient {
             db = c.getDatabase(js.getString("database"));    // grab database called "alex"
 
             // server side
-            new Thread(new Runnable() {
+            /*new Thread(new Runnable() {
                 @Override
                 public void run() {
 
@@ -51,58 +59,84 @@ public class thghtShreClient {
 
                     }
                 }
-            }).run();
+            }).run();*/
 
-            /*while (true) {
-                // sleep amount
-                TimeUnit.SECONDS.sleep(Long.parseLong(js.getString("delay")));
-
-                
-            }*/
-
-			                                                      // of annoying messages
-			String collectionName = js.getString("collection"); 
-
+            
+            
             //print timestamp
+            String collectionName = js.getString("collection"); 
+            
+            
 			System.out.println("===XXXXXXXXXX==========");
-			java.util.Date date= new java.util.Date();
+			Date date= new Date();
 			System.out.println(new Timestamp(date.getTime()));
 			System.out.println("database name:" + db.getName());
 			System.out.println("collection:" + collectionName);
 			System.out.println("number of Documents:" + db.getCollection(collectionName).count());
 			
 			 
-			MongoCollection<Document> dox = db.getCollection("foo");  // grab collection "foo"
-			
-			FindIterable<Document> result = dox.find();   // retrieve everything in collection foo
-			
-			result.forEach(new Block<Document>() {        // print each retrieved document
-			     public void apply(final Document d) {
-			         System.out.println(d);
-			     }
-			
-			  });		
-			
-			/*Document o = new Document();    // create a new JSON document object
-			o.append("type", "email");      // fill it with stuff
-			o.append("content", "lol");
-			 
-			System.out.println("= = = = = = = = = = = = = = =");
-			System.out.println(o);
-			System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-			
-			db.getCollection("foo").insertOne(o);   // insert one object into collection foo
-            */
-			
-		    System.out.println("\n\n ===  SUCCESS!! === \n\n");
-			
+            int cycles = 0;
+            //Client Code
+            while (true) {
+
+                // sleep amount
+                TimeUnit.SECONDS.sleep(js.getInt("delay"));
+                
+                JSONObject gen = thghtShreGen.generate();
+                date= new Date();
+                gen.put("timestamp",new Timestamp(date.getTime()));
+                
+                Document myDoc = Document.parse(gen.toString());
+                db.getCollection(collectionName).insertOne(myDoc);
+                System.out.println(gen.toString(2));
+                fw.write(gen.toString(2));
+                fw.flush();
+                
+                if (cycles == 10) {
+            		String user = gen.getString("user");
+            		int count = 0;
+            		Document query = new Document();                // create a query document
+            		query.append("user", user);    
+            		
+            		String printout = "=============================\n";
+            		printout += "Total Messages: " +db.getCollection(collectionName).count();
+            		printout += "\n";
+
+            		FindIterable<Document> result = db.getCollection(collectionName).find(query);
+            		Iterator it = result.iterator();
+            		while(it.hasNext()){
+            			count++;
+            			it.next();
+            		}
+            		
+            		printout += "Messages by " + user + ": " + count;
+            		printout += "\n=============================\n";
+            		cycles = 0;
+            		
+            		System.out.println(printout);
+            		fw.write(printout);
+                    fw.flush();
+            		
+            	}
+                cycles++;
+            }
+            
 		} catch (Exception e) {
 		
 		  System.out.println(e);
 		
 		  System.out.println("=============================");
 		
+		} finally {
+			try {
+				fw.flush();
+				fw.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
+        
+        
         
         return;
     }
