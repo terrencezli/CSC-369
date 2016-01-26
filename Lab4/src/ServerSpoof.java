@@ -36,6 +36,8 @@ public class ServerSpoof {
 
             String collectionName = js.getString("collection");
             System.out.println("number of Documents:" + db.getCollection(collectionName).count());
+
+            // drops collection
             db.getCollection(js.getString("monitor")).drop();
 
             s = new Scanner(new File(js.getString("wordFilter")));
@@ -52,6 +54,9 @@ public class ServerSpoof {
             System.out.println("collection:" + collectionName);
             System.out.println("number of Documents:" + db.getCollection(collectionName).count());
 
+
+            long lastTotal = 0;
+            long insertedSince = 0;
             while (true) {
                 JSONObject monitor = new JSONObject();
                 TimeUnit.SECONDS.sleep(3 * js.getInt("delay"));
@@ -59,6 +64,7 @@ public class ServerSpoof {
                 date= new Date();
                 monitor.put("timestamp",new Timestamp(date.getTime()));
 
+                // unique messages
                 MongoCursor<String> distMessages= db.getCollection(collectionName).distinct("text", String.class).iterator();
 
                 int uniqueMessages = 0;
@@ -66,7 +72,9 @@ public class ServerSpoof {
                     uniqueMessages++;
                     distMessages.next();
                 }
+                monitor.put("messages", uniqueMessages);
 
+                // distinct users
                 MongoCursor<String> distUsers= db.getCollection(collectionName).distinct("user", String.class).iterator();
 
                 int uniqueUsers = 0;
@@ -74,9 +82,11 @@ public class ServerSpoof {
                     uniqueUsers++;
                     distUsers.next();
                 }
+                monitor.put("users", uniqueUsers);
 
-
-
+                // number since last checkpoint
+                long collectionSize = db.getCollection(collectionName).count();
+                
             }
 
         } catch (FileNotFoundException | InterruptedException | JSONException e) {
