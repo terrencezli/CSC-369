@@ -1,22 +1,32 @@
 import com.mongodb.MongoClient;
+
 import com.mongodb.QueryBuilder;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 
 import org.bson.Document;
+import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.Block;
+import org.bson.Document;
+import org.json.JSONArray;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static java.util.Arrays.asList;
 
 /**
  * Created by terrence on 1/26/16.
@@ -31,15 +41,20 @@ public class ServerSpoof {
         JSONObject js;
         Scanner s;
         ArrayList<String> list;
+        FileWriter fw = null;
+
+        Logger logger = Logger.getLogger("org.mongodb.driver");  // turn off logging
+        logger.setLevel(Level.OFF);                              // this lets us squash a lot
 
         try {
+            fw = new FileWriter(new File("server_log.txt"));
             t = new JSONTokener(new FileReader(new File(args[0])));
             js = new JSONObject(t);
             c = new MongoClient(js.getString("mongo"));  // connect to server
-            db = c.getDatabase(js.getString("database"));    // grab database called "alex"
+            db = c.getDatabase(js.getString("database"));
+
 
             String collectionName = js.getString("collection");
-            System.out.println("number of Documents:" + db.getCollection(collectionName).count());
 
             // drops collection
             db.getCollection(js.getString("monitor")).drop();
@@ -47,22 +62,22 @@ public class ServerSpoof {
             s = new Scanner(new File(js.getString("wordFilter")));
             list = new ArrayList<String>();
             while (s.hasNext()){
-                list.add(s.next());
+               list.add(s.next());
             }
             s.close();
 
-            System.out.println("===XXXXXXXXXX==========");
+            String printout = "===XXXXXXXXXX==========\n";
             Date date= new Date();
-            System.out.println(new Timestamp(date.getTime()));
-            System.out.println("database name:" + db.getName());
-            System.out.println("collection:" + collectionName);
-            System.out.println("number of Documents:" + db.getCollection(collectionName).count());
-
+            printout += new Timestamp(date.getTime()) + "\n";
+            printout += "database name:" + db.getName() + "\n";
+            printout += "collection:" + collectionName + "\n";
+            printout += "number of Documents:" + db.getCollection(collectionName).count() + "\n";
+            System.out.println(printout);
+            fw.write(printout);
+            fw.flush();
 
             long lastTotal = 0;
-            long insertedSince = 0;
-            
-            System.out.println("start loop");
+
             while (true) {
                 JSONObject monitor = new JSONObject();
                 
@@ -124,10 +139,54 @@ public class ServerSpoof {
                 }
                 
                 
+
+                monitor.put("new", collectionSize - lastTotal);
+                lastTotal = collectionSize;
+
+                // number messages for each status
+                AggregateIterable<Document> statusMessage = db.getCollection(collectionName).aggregate(asList(
+                        new Document("$group", new Document("_id", "$status").append("count", new Document("$sum", 1)))));
+
+                final JSONArray statuses = new JSONArray();
+                statusMessage.forEach(new Block<Document>() {
+                    @Override
+                    public void apply(final Document document) {
+                        statuses.put(document.toJson());
+                        //System.out.println(document.toJson());
+                    }
+                });
+                monitor.put("statusStats", statuses);
+
+                // number messages for each recepients
+                AggregateIterable<Document> destination = db.getCollection(collectionName).aggregate(asList(
+                        new Document("$group", new Document("_id", "$recepient").append("count", new Document("$sum", 1)))));
+
+                final JSONArray recepients = new JSONArray();
+                destination.forEach(new Block<Document>() {
+                    @Override
+                    public void apply(final Document document) {
+                        recepients.put(document.toJson());
+                        //System.out.println(document.toJson());
+                    }
+                });
+                monitor.put("recepientStats", recepients);
+
+                System.out.println(monitor.toString(2));
+                fw.write(monitor.toString(2));
+                fw.flush();
+
             }
 
-        } catch (FileNotFoundException | InterruptedException | JSONException e) {
+        } catch (InterruptedException | JSONException | IOException e) {
             e.printStackTrace();
+        }
+        finally {
+            try {
+                fw.flush();
+                fw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
