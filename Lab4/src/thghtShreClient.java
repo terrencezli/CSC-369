@@ -73,8 +73,7 @@ public class thghtShreClient {
                 fw.flush();
                 
                 if (cycles == 40) {
-            		String user = gen.getString("user");
-            		int count = 0;
+            		String user = gen.getString("user");         
             		Document query = new Document();                // create a query document
             		query.append("user", user);    
             		
@@ -82,12 +81,8 @@ public class thghtShreClient {
             		printout += "Total Messages: " +db.getCollection(collectionName).count();
             		printout += "\n";
 
-            		FindIterable<Document> result = db.getCollection(collectionName).find(query);
-            		Iterator it = result.iterator();
-            		while(it.hasNext()){
-            			count++;
-            			it.next();
-            		}
+            		int count = (int) db.getCollection(collectionName).count(query);
+            		
             		
             		printout += "Messages by " + user + ": " + count;
             		printout += "\n=============================\n";
