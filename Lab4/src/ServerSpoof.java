@@ -1,6 +1,9 @@
 import com.mongodb.MongoClient;
+import com.mongodb.QueryBuilder;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+
+import org.bson.Document;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -11,6 +14,7 @@ import java.io.FileReader;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -57,13 +61,18 @@ public class ServerSpoof {
 
             long lastTotal = 0;
             long insertedSince = 0;
+            
+            System.out.println("start loop");
             while (true) {
                 JSONObject monitor = new JSONObject();
-                TimeUnit.SECONDS.sleep(3 * js.getInt("delay"));
+                
+                Date previous = new Date();        
+                TimeUnit.SECONDS.sleep(2);
 
                 date= new Date();
                 monitor.put("timestamp",new Timestamp(date.getTime()));
 
+                System.out.println("unique messages");
                 // unique messages
                 MongoCursor<String> distMessages= db.getCollection(collectionName).distinct("text", String.class).iterator();
 
@@ -74,6 +83,8 @@ public class ServerSpoof {
                 }
                 monitor.put("messages", uniqueMessages);
 
+                
+                System.out.println("unique users");
                 // distinct users
                 MongoCursor<String> distUsers= db.getCollection(collectionName).distinct("user", String.class).iterator();
 
@@ -86,6 +97,32 @@ public class ServerSpoof {
 
                 // number since last checkpoint
                 long collectionSize = db.getCollection(collectionName).count();
+                
+                System.out.println("word Filter");
+                //query for text with words in wordFilter
+                for(String str: list) {
+                	
+     
+            		db.getCollection(collectionName).createIndex(new Document("text", "text"));
+            		
+            		System.out.println(new Timestamp(previous.getTime()).toString());
+            		
+            		Document inner = new Document("$search", str);
+            		Document query = new Document("$text", inner);
+            		Document inner2 = new Document("$gt", new Timestamp(previous.getTime()).toString());
+            		Document query2 = new Document("timestamp", inner2);
+            		//.append("timestamp", inner2)
+            		Iterator count=db.getCollection(collectionName).find(query.append("timestamp", inner2)).iterator();
+
+                    int wordCount = 0;
+                    while(count.hasNext()){
+                    	wordCount++;
+                    	System.out.println(str + ": " + count.next().toString());
+                    } 
+                    
+                	//System.out.println(str + ": " + wordCount);
+                }
+                
                 
             }
 
