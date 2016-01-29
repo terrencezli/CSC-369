@@ -93,7 +93,7 @@ public class ServerSpoof {
                 date= new Date();
                 monitor.put("timestamp",new Timestamp(date.getTime()));
 
-                System.out.println("unique messages");
+                //System.out.println("unique messages");
                 // unique messages
                 MongoCursor<String> distMessages= db.getCollection(collectionName).distinct("text", String.class).iterator();
 
@@ -105,7 +105,7 @@ public class ServerSpoof {
                 monitor.put("messages", uniqueMessages);
 
                 
-                System.out.println("unique users");
+                //System.out.println("unique users");
                 // distinct users
                 MongoCursor<String> distUsers= db.getCollection(collectionName).distinct("user", String.class).iterator();
 
@@ -119,31 +119,25 @@ public class ServerSpoof {
                 // number since last checkpoint
                 long collectionSize = db.getCollection(collectionName).count();
                 
-                System.out.println("word Filter");
+                
+                //System.out.println("word Filter");
                 //query for text with words in wordFilter
                 for(String str: list) {
-                	
-     
-            		db.getCollection(collectionName).createIndex(new Document("text", "text"));
-            		
-            		System.out.println(new Timestamp(previous.getTime()).toString());
-            		
-            		Document inner = new Document("$search", str);
+                
+            		db.getCollection(collectionName).createIndex(new Document("text", "text"));  		
+            		Document inner = new Document("$search", " " + str + " ");
             		Document query = new Document("$text", inner);
             		Document inner2 = new Document("$gt", new Timestamp(previous.getTime()).toString());
-            		Document query2 = new Document("timestamp", inner2);
-            		//.append("timestamp", inner2)
+            
             		Iterator count=db.getCollection(collectionName).find(query.append("timestamp", inner2)).iterator();
 
                     int wordCount = 0;
                     while(count.hasNext()){
                     	wordCount++;
                     	System.out.println(str + ": " + count.next().toString());
-                    } 
-                    
+                    }                    
                 	//System.out.println(str + ": " + wordCount);
                 }
-                
                 
 
                 monitor.put("new", collectionSize - lastTotal);
