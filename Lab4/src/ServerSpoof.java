@@ -4,6 +4,7 @@ import com.mongodb.QueryBuilder;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 
+import com.mongodb.util.JSON;
 import org.bson.Document;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoCursor;
@@ -43,6 +44,11 @@ public class ServerSpoof {
         ArrayList<String> list;
         FileWriter fw = null;
 
+        JSONObject checkpoint = new JSONObject();
+        JSONArray messageTotals = new JSONArray();
+        JSONArray userTotals = new JSONArray();
+        JSONArray newMessageTotals = new JSONArray();
+
         Logger logger = Logger.getLogger("org.mongodb.driver");  // turn off logging
         logger.setLevel(Level.OFF);                              // this lets us squash a lot
 
@@ -52,14 +58,14 @@ public class ServerSpoof {
             js = new JSONObject(t);
             c = new MongoClient(js.getString("mongo"));  // connect to server
             db = c.getDatabase(js.getString("database"));
-
+            checkpoint.put("recordType", "monitor totals");
 
             String collectionName = js.getString("collection");
 
             // drops collection
             db.getCollection(js.getString("monitor")).drop();
 
-            s = new Scanner(new File(js.getString("wordFilter")));
+            s = new Scanner(new File(js.getString("words")));
             list = new ArrayList<String>();
             while (s.hasNext()){
                list.add(s.next());
@@ -175,6 +181,17 @@ public class ServerSpoof {
                 fw.write(monitor.toString(2));
                 fw.flush();
 
+                // checkpoint
+                messageTotals.put(uniqueMessages);
+                userTotals.put(uniqueUsers);
+                newMessageTotals.put(collectionSize - lastTotal);
+
+                if (db.getCollection(js.getString("monitor")).count() > 0) {
+                    db.getCollection(js.getString("monitor")).drop();
+                }
+
+                Document myDoc = Document.parse(checkpoint.toString());
+                db.getCollection(js.getString("monitor")).insertOne(myDoc);
             }
 
         } catch (InterruptedException | JSONException | IOException e) {

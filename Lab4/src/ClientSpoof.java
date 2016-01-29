@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 
 
-public class thghtShreClient {
+public class ClientSpoof {
 
     public static void main(String args[]) {
         JSONTokener t;
@@ -36,15 +36,15 @@ public class thghtShreClient {
 
         try {
         	
-        	fw = new FileWriter(new File("log.txt"));
             t = new JSONTokener(new FileReader(new File(args[0])));
             js = new JSONObject(t);
+			fw = new FileWriter(new File(js.getString("clientLog")));
 
             c = new MongoClient(js.getString("mongo"));  // connect to server
             db = c.getDatabase(js.getString("database"));    // grab database called "alex"
 
             //print timestamp
-            String collectionName = js.getString("collection"); 
+            String collectionName = js.getString("collection");
             
             
 			System.out.println("===XXXXXXXXXX==========");
