@@ -88,7 +88,7 @@ public class ServerSpoof {
                 JSONObject monitor = new JSONObject();
                 
                 Date previous = new Date();        
-                TimeUnit.SECONDS.sleep(2);
+                TimeUnit.SECONDS.sleep(js.getLong("delay") * 3);
 
                 date= new Date();
                 monitor.put("timestamp",new Timestamp(date.getTime()));
