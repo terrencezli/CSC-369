@@ -40,8 +40,8 @@ public class ServerSpoof {
         MongoDatabase db;
         JSONTokener t;
         JSONObject js;
-        Scanner s;
-        ArrayList<String> list;
+        Scanner s, s2;
+        ArrayList<String> list, filter;
         FileWriter fw = null;
 
         JSONObject checkpoint = new JSONObject();
@@ -53,12 +53,12 @@ public class ServerSpoof {
         logger.setLevel(Level.OFF);                              // this lets us squash a lot
 
         try {
-            fw = new FileWriter(new File("server_log.txt"));
             t = new JSONTokener(new FileReader(new File(args[0])));
             js = new JSONObject(t);
             c = new MongoClient(js.getString("mongo"));  // connect to server
             db = c.getDatabase(js.getString("database"));
             checkpoint.put("recordType", "monitor totals");
+            fw = new FileWriter(new File(js.getString("serverLog")));
 
             String collectionName = js.getString("collection");
 
@@ -71,6 +71,14 @@ public class ServerSpoof {
                list.add(s.next());
             }
             s.close();
+            
+            
+            s2 = new Scanner(new File(js.getString("wordFilter")));
+            filter = new ArrayList<String>();
+            while (s2.hasNext()){
+               filter.add(s2.next());
+            }
+            s2.close();
 
             String printout = "===XXXXXXXXXX==========\n";
             Date date= new Date();
@@ -122,7 +130,7 @@ public class ServerSpoof {
                 
                 //System.out.println("word Filter");
                 //query for text with words in wordFilter
-                for(String str: list) {
+                for(String str: filter) {
                 
             		db.getCollection(collectionName).createIndex(new Document("text", "text"));  		
             		Document inner = new Document("$search", " " + str + " ");

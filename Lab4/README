@@ -1,0 +1,24 @@
+Terrence Li/Bryan Sugiarto
+tzli/bsugiart
+
+To compile:
+	- javac -cp \* *.java
+
+To run:
+	- java -cp .:\* ServerSpoof configuration.properties  
+	- java -cp .:\* ClientSpoof configuration.properties 
+
+Files Attached
+
+	-ServerSpoof.java 			= spoof of the server
+	-ClientSpoof.java 			= spoof of the client
+	-configuration.properties 	= config file
+	-wordFilter.txt 			= text of special words to query
+	-word-file.text 			= text of words to generate messages
+	-thghtShreGen.java 			= generates messages
+
+
+	JAR Files
+	mongo-java-driver-3.2.0.jar = mongo connection JAR
+	org.json-20120521.jar 		= JSON JAR
+
